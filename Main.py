@@ -2,53 +2,43 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Load the provided CSV file
+# Load the dataset
 file_path = 'Nairobi Office Price Ex.csv'
-nairobi_data = pd.read_csv(file_path)
+data = pd.read_csv(file_path)
 
-# Display the first few rows of the dataset to understand its structure
-nairobi_data.head()
-
-
-# Extract the relevant columns (SIZE and PRICE)
-nairobi_data_filtered = nairobi_data[['SIZE', 'PRICE']]
-
-# Convert data to numpy arrays for efficient computation
-X = nairobi_data_filtered['SIZE'].values
-y = nairobi_data_filtered['PRICE'].values
-
+# Separate the feature (X) and target (y) variables
+X = data['SIZE'].values
+y = data['PRICE'].values
 
 # Function to calculate Mean Squared Error (MSE)
 def mean_squared_error(y_true, y_pred):
     return np.mean((y_true - y_pred) ** 2)
 
-
-# Function to perform Gradient Descent for Linear Regression
+# Gradient Descent function to update slope (m) and y-intercept (c)
 def gradient_descent(X, y, m, c, learning_rate, epochs):
-    n = len(X)
-    errors = []
+    N = len(y)  # Number of data points
+    error_history = []  # Store error for each epoch
 
     for epoch in range(epochs):
-        # Prediction of y based on current slope (m) and intercept (c)
-        y_pred = m * X + c
+        y_pred = m * X + c  # Predictions based on current slope and intercept
+        error = y - y_pred  # Difference between actual and predicted values
 
-        # Compute MSE for this epoch
-        error = mean_squared_error(y, y_pred)
-        errors.append(error)
+        # Calculate current MSE and store it
+        mse = mean_squared_error(y, y_pred)
+        error_history.append(mse)
 
-        # Calculate gradients for m and c
-        dm = -(2 / n) * np.sum(X * (y - y_pred))
-        dc = -(2 / n) * np.sum(y - y_pred)
+        # Calculate gradients
+        dm = -(2 / N) * np.dot(X, error)
+        dc = -(2 / N) * np.sum(error)
 
-        # Update m and c
+        # Update slope (m) and intercept (c)
         m = m - learning_rate * dm
         c = c - learning_rate * dc
 
         # Print the error at each epoch
-        print(f"Epoch {epoch + 1}: MSE = {error:.4f}")
+        print(f"Epoch {epoch + 1}: MSE = {mse:.4f}")
 
-    return m, c, errors
-
+    return m, c, error_history
 
 # Set random initial values for m (slope) and c (y-intercept)
 np.random.seed(42)  # For reproducibility
@@ -64,13 +54,14 @@ m_final, c_final, errors = gradient_descent(X, y, m_init, c_init, learning_rate,
 
 # Plot the line of best fit after the final epoch
 plt.scatter(X, y, color='blue', label='Data points')
-plt.plot(X, m_final * X + c_final, color='red', label='Best fit line')
-plt.xlabel('Office Size (sq. ft.)')
-plt.ylabel('Office Price (in USD)')
-plt.title('Linear Regression: Office Size vs. Price')
+plt.plot(X, m_final * X + c_final, color='red', label='Line of Best Fit')
+plt.xlabel('Office Size (sq ft)')
+plt.ylabel('Price (USD)')
+plt.title('Office Size vs Price (Linear Regression)')
 plt.legend()
 plt.show()
 
-# Predict the office price when size is 100 sq. ft
-predicted_price = m_final * 100 + c_final
+# Predict the office price when the size is 100 sq. ft.
+office_size = 100
+predicted_price = m_final * office_size + c_final
 print("predicted office price when the size is 100 sq. ft. =", predicted_price)
